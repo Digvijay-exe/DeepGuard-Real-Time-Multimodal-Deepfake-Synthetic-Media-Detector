@@ -1,0 +1,6 @@
+{
+  "name": "DeepGuard - Multimodal Deepfake & Synthetic Media Detection System",
+  "description": "Enterprise-grade multimodal deepfake detection platform featuring a Chrome Extension (Manifest V3), FastAPI ViT & Wav2Vec2 inference backend, and evaluator analytical dashboard with ROC curves, frame heatmaps, and audio spectrograms.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
