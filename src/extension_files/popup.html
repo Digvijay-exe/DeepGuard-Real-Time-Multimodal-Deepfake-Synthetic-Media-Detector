@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DeepGuard Inspector</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      width: 360px;
+      background-color: #0b0f19;
+      color: #f1f5f9;
+      padding: 16px;
+      overflow-x: hidden;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #1e293b;
+      margin-bottom: 16px;
+    }
+
+    .brand-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .brand-title svg {
+      width: 18px;
+      height: 18px;
+      color: #38bdf8;
+    }
+
+    .status-badge {
+      font-size: 11px;
+      font-weight: 600;
+      color: #10b981;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: #10b981;
+      box-shadow: 0 0 8px #10b981;
+    }
+
+    /* Page Info Card */
+    .page-info-card {
+      background-color: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 16px;
+      font-size: 12px;
+    }
+
+    .page-url {
+      color: #94a3b8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-family: monospace;
+      margin-top: 2px;
+    }
+
+    /* Circular Risk Gauge */
+    .gauge-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 0 16px;
+      position: relative;
+    }
+
+    .gauge-svg {
+      transform: rotate(-90deg);
+      width: 130px;
+      height: 130px;
+    }
+
+    .gauge-bg {
+      fill: none;
+      stroke: #1e293b;
+      stroke-width: 8;
+    }
+
+    .gauge-fill {
+      fill: none;
+      stroke: #38bdf8;
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 283;
+      stroke-dashoffset: 283;
+      transition: stroke-dashoffset 0.8s ease, stroke 0.4s ease;
+    }
+
+    .gauge-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .gauge-value {
+      font-size: 26px;
+      font-weight: 800;
+      color: #f8fafc;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .gauge-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+
+    /* Breakdown Bars */
+    .breakdown-section {
+      background-color: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+
+    .metric-row {
+      margin-bottom: 10px;
+    }
+
+    .metric-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .metric-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      margin-bottom: 4px;
+    }
+
+    .metric-name {
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    .metric-pct {
+      color: #f1f5f9;
+      font-weight: 600;
+      font-family: monospace;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 6px;
+      background-color: #1e293b;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.6s ease;
+    }
+
+    .progress-visual {
+      background: linear-gradient(90deg, #38bdf8, #6366f1);
+      width: 0%;
+    }
+
+    .progress-audio {
+      background: linear-gradient(90deg, #f59e0b, #ec4899);
+      width: 0%;
+    }
+
+    /* Explanation Area */
+    .verdict-box {
+      font-size: 11px;
+      line-height: 1.4;
+      padding: 8px 10px;
+      border-radius: 6px;
+      background-color: #0f172a;
+      border-left: 3px solid #38bdf8;
+      color: #cbd5e1;
+      margin-bottom: 16px;
+      min-height: 40px;
+    }
+
+    /* Actions */
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background-color: #2563eb;
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background-color: #1d4ed8;
+    }
+
+    .btn-secondary {
+      background-color: #1e293b;
+      color: #cbd5e1;
+      border: 1px solid #334155;
+    }
+
+    .btn-secondary:hover {
+      background-color: #334155;
+    }
+
+    /* Settings Panel */
+    .settings-drawer {
+      display: none;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #1e293b;
+      font-size: 11px;
+    }
+
+    .settings-drawer.open {
+      display: block;
+    }
+
+    .setting-label {
+      color: #94a3b8;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .setting-input {
+      width: 100%;
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      color: #f1f5f9;
+      font-size: 11px;
+      padding: 6px 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      outline: none;
+    }
+
+    .setting-input:focus {
+      border-color: #38bdf8;
+    }
+
+    .footer-note {
+      font-size: 10px;
+      color: #64748b;
+      text-align: center;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="brand-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <path d="m9 12 2 2 4-4"/>
+      </svg>
+      <span>DeepGuard</span>
+    </div>
+    <div class="status-badge" id="api-status">
+      <div class="status-dot"></div>
+      <span id="status-text">Backend Ready</span>
+    </div>
+  </div>
+
+  <!-- Active Tab Info -->
+  <div class="page-info-card">
+    <div style="font-weight: 600; color: #cbd5e1;">Active Target Page:</div>
+    <div class="page-url" id="active-tab-url">Detecting page...</div>
+  </div>
+
+  <!-- Circular Visual Risk Gauge -->
+  <div class="gauge-container">
+    <svg class="gauge-svg" viewBox="0 0 100 100">
+      <circle class="gauge-bg" cx="50" cy="50" r="45"></circle>
+      <circle class="gauge-fill" id="gauge-circle" cx="50" cy="50" r="45"></circle>
+    </svg>
+    <div class="gauge-content">
+      <div class="gauge-value" id="risk-percentage">0%</div>
+      <div class="gauge-label" id="risk-verdict">Ready to Scan</div>
+    </div>
+  </div>
+
+  <!-- Multimodal Anomaly Breakdown -->
+  <div class="breakdown-section">
+    <div class="metric-row">
+      <div class="metric-header">
+        <span class="metric-name">ViT Facial & Spatial Anomaly</span>
+        <span class="metric-pct" id="visual-score-text">0.0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-bar progress-visual" id="visual-progress"></div>
+      </div>
+    </div>
+    <div class="metric-row">
+      <div class="metric-header">
+        <span class="metric-name">Wav2Vec2 Spectral & Voice Clone</span>
+        <span class="metric-pct" id="audio-score-text">0.0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-bar progress-audio" id="audio-progress"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Forensic Explanation -->
+  <div class="verdict-box" id="verdict-explanation">
+    Right-click any web image/video to analyze, or click "Scan Active Tab" to inspect all embedded media elements.
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="actions">
+    <button class="btn btn-primary" id="btn-scan-tab">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      Scan Active Tab
+    </button>
+    <button class="btn btn-secondary" id="btn-toggle-settings">
+      Settings
+    </button>
+  </div>
+
+  <!-- Settings Drawer -->
+  <div class="settings-drawer" id="settings-drawer">
+    <label class="setting-label" for="api-url-input">FastAPI Backend Endpoint:</label>
+    <input type="text" class="setting-input" id="api-url-input" value="http://localhost:8000/api/v1/detect" />
+    <div style="display: flex; justify-content: flex-end; margin-top: 6px;">
+      <button class="btn btn-secondary" id="btn-save-settings" style="padding: 4px 8px; font-size: 11px;">Save Endpoint</button>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    ViT google/vit-base-patch16 · Wav2Vec2 facebook/wav2vec2-base
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

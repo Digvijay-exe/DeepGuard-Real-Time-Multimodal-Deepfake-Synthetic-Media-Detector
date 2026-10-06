@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "DeepGuard - Multimodal Deepfake Detector",
+  "version": "1.0",
+  "description": "Detect synthetic media and deepfakes.",
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "deepguard@local.extension"
+    }
+  },
+
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "contextMenus",
+    "storage"
+  ],
+
+  "background": {
+    "scripts": ["background.js"]
+  },
+
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
